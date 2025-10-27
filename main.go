@@ -10,13 +10,12 @@ import (
 )
 
 var (
-  configFile = kingpin.Flag("config.file", "Exporter configuration file.").Default("example.yaml").String()
+	configFile = kingpin.Flag("config.file", "Exporter configuration file.").Default("example.yaml").String()
 )
-
 
 func main() {
 	kingpin.Parse()
-	
+
 	c, err := exporter.ParseConfig(*configFile)
 	if err != nil {
 		log.Fatal(err)
