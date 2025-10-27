@@ -7,8 +7,13 @@ import (
 )
 
 
+var defaultHost string = "gitlab.com"
+var defaultPort int32  = 443
+
+
 type gitlabConfig struct {
-	Host string `yaml:"host"`
+	Host *string `yaml:"host"`
+	Port *int32 `yaml:"port"`
 }
 
 type exporterConfig struct {
@@ -28,6 +33,14 @@ func ParseConfig(path string) (*exporterConfig, error) {
     if err != nil {
         return nil, err
     }
+
+	if config.Gitlab.Host == nil {
+		config.Gitlab.Host = &defaultHost
+	}
+
+	if config.Gitlab.Port == nil {
+		config.Gitlab.Port = &defaultPort
+	}
 
 	return &config, nil
 }
