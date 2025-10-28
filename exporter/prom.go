@@ -46,13 +46,13 @@ func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
 
 	if err != nil {
 		log.Printf("ERROR %s", err)
-		c.sendProbeSuccess(ch, false)  // send.go
+		c.sendProbeSuccess(ch, false) // send.go
 		return
 	}
 
-	c.sendPipelineCountByStatus(ch, metrics)  // send.go
-	c.sendProbeSuccess(ch, true)  // send.go
-	c.sendLatestDuration(ch, metrics.LatestDuration)  // send.go
+	c.sendPipelineCountByStatus(ch, metrics)         // send.go
+	c.sendProbeSuccess(ch, true)                     // send.go
+	c.sendLatestDuration(ch, metrics.LatestDuration) // send.go
 }
 
 type ProbeManager struct {
