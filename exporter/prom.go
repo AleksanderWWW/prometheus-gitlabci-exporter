@@ -6,18 +6,19 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 var pipelineTotalDesc = prometheus.NewDesc(
-		"gitlab_pipeline_total",
-		"Total number of pipelines for the target project.",
-		[]string{"group", "project", "status"},
-		nil,
-	)
+	"gitlab_pipeline_total",
+	"Total number of pipelines for the target project.",
+	[]string{"group", "project", "status"},
+	nil,
+)
 
 type GitLabCollector struct {
 	group, project string
-	config exporterConfig
+	client         *gitlab.Client
 }
 
 func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -25,31 +26,13 @@ func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
-	metrics, _ := GetMetrics(c.config, c.group, c.project)
+	metrics, _ := GetMetrics(c.client, c.group, c.project)
 
-	// send successful pipeline count
-	ch <- prometheus.MustNewConstMetric(
-			pipelineTotalDesc, 
-			prometheus.CounterValue, 
-			float64(metrics.PipelineSuccessCount), 
-			c.group, 
-			c.project, 
-			"success",
-		)
-
-	// send failed pipeline count
-	ch <- prometheus.MustNewConstMetric(
-			pipelineTotalDesc, 
-			prometheus.CounterValue, 
-			float64(metrics.PipelineFailuedCount), 
-			c.group, 
-			c.project, 
-			"failed",
-		)
+	c.sendPipelineCountByStatus(ch, metrics) // send.go
 }
 
 type ProbeManager struct {
-	Config exporterConfig
+	Client *gitlab.Client
 }
 
 func (pm *ProbeManager) ProbeHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +45,7 @@ func (pm *ProbeManager) ProbeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	reg := prometheus.NewRegistry()
-	reg.MustRegister(&GitLabCollector{group: group, project: project, config: pm.Config})
+	reg.MustRegister(&GitLabCollector{group: group, project: project, client: pm.Client})
 
 	log.Printf("Scraping GitLab pipelines for %s/%s", group, project)
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)

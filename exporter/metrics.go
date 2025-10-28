@@ -2,53 +2,55 @@ package exporter
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
+
+	"gitlab.com/gitlab-org/api/client-go"
 )
 
-type Metrics struct {
-	PipelineSuccessCount int32
-	PipelineFailuedCount int32
+type PipelineCount struct {
+	Success int32
+	Failed  int32
+	Pending int32
 }
 
-func GetMetrics(config exporterConfig, group, project string) (*Metrics, error) {
-	projectId := url.PathEscape(fmt.Sprintf("%s/%s", group, project))
+type Metrics struct {
+	Count PipelineCount
+}
 
-	apiURL := fmt.Sprintf("%s/api/v4/projects/%s/pipelines", *config.Gitlab.Host, projectId)
-
-	req, err := http.NewRequest("GET", apiURL, nil)
+func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
+	pid := url.PathEscape(fmt.Sprintf("%s/%s", group, project))
+	pipelines, _, err := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// Add Authorization header
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", *config.Gitlab.ApiToken))
+	var (
+		successCount, failedCount, pendingCount int32
+	)
 
-	// Send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
+	for _, pipe := range pipelines {
+		if pipe.Status == "pending" {
+			pendingCount++
+		}
+
+		if pipe.Status == "success" {
+			successCount++
+		}
+
+		if pipe.Status == "failed" {
+			failedCount++
+		}
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("reading response: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("non-OK response: %s\n%s", resp.Status, body)
-	}
-
 
 	// here a real call to Gitlab CI/CD API
 
 	// TODO: gitlab.com/gitlab-org/api/client-go
 
 	return &Metrics{
-		PipelineSuccessCount: 42,
-		PipelineFailuedCount: 1,
+		PipelineCount{
+			Success: successCount,
+			Failed:  failedCount,
+			Pending: pendingCount,
+		},
 	}, nil
 }

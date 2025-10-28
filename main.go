@@ -3,29 +3,39 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/alecthomas/kingpin/v2"
+	"gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/AleksanderWWW/prometheus-gitlabci-exporter/exporter"
 )
 
 var (
-	configFile = kingpin.Flag("config.file", "Exporter configuration file.").Default("example.yaml").String()
+	apiToken   = kingpin.Flag("api.token", "Gitlab API token.").String()
 	listenAddr = kingpin.Flag("web.port", "Port to listen on.").Default(":9115").String()
 )
 
 func main() {
 	kingpin.Parse()
 
-	c, err := exporter.ParseConfig(*configFile)
-	if err != nil {
-		log.Fatal(err)
+	if apiToken == nil {
+		token := os.Getenv("GITLAB_API_TOKEN")
+		if token == "" {
+			log.Fatal("no Gitlab API token provided")
+		}
+		apiToken = &token
 	}
 
-	manager := exporter.ProbeManager{Config: *c}
+	git, err := gitlab.NewClient(*apiToken)
+	if err != nil {
+		log.Fatalf("Could not create client: %s", err)
+	}
+
+	manager := exporter.ProbeManager{Client: git}
 
 	http.HandleFunc("/probe", manager.ProbeHandler)
 
-	log.Printf("🚀 Listening on %s (GitLab host: %s)", *listenAddr, *c.Gitlab.Host)
+	log.Printf("🚀 Listening on %s", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
 }
