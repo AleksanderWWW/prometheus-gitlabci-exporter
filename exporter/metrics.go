@@ -7,9 +7,17 @@ import (
 )
 
 type PipelineCount struct {
-	Success int32
-	Failed  int32
-	Pending int32
+	Success float64
+	Failed  float64
+	Pending float64
+	Created float64
+	WaitingForResource float64
+	Preparing float64
+	Running float64
+	Cancelled float64
+	Skipped float64
+	Scheduled float64
+	Manual float64
 }
 
 type Metrics struct {
@@ -24,29 +32,36 @@ func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) 
 		return nil, err
 	}
 
-	var (
-		successCount, failedCount, pendingCount int32
-	)
+	pc := PipelineCount{}
 
 	for _, pipe := range pipelines {
-		if pipe.Status == "pending" {
-			pendingCount++
-		}
-
-		if pipe.Status == "success" {
-			successCount++
-		}
-
-		if pipe.Status == "failed" {
-			failedCount++
+		switch pipe.Status {
+			case "success":
+				pc.Success++
+			case "failed":
+				pc.Failed++
+			case "pending":
+				pc.Pending++
+			case "created":
+				pc.Created++
+			case "waiting_for_resource":
+				pc.WaitingForResource++
+			case "preparing":
+				pc.Preparing++
+			case "running":
+				pc.Running++
+			case "cancelled":
+				pc.Cancelled++
+			case "skipped":
+				pc.Skipped++
+			case "scheduled":
+				pc.Scheduled++
+			case "manual":
+				pc.Manual++
 		}
 	}
 
 	return &Metrics{
-		PipelineCount{
-			Success: successCount,
-			Failed:  failedCount,
-			Pending: pendingCount,
-		},
+		pc,
 	}, nil
 }
