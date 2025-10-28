@@ -16,6 +16,13 @@ var pipelineTotalDesc = prometheus.NewDesc(
 	nil,
 )
 
+var successDesc = prometheus.NewDesc(
+	"gitlab_probe_success",
+	"Whether the probe was successful (1 - success, 0 - failure).",
+	nil,
+	nil,
+)
+
 type GitLabCollector struct {
 	group, project string
 	client         *gitlab.Client
@@ -23,16 +30,20 @@ type GitLabCollector struct {
 
 func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- pipelineTotalDesc
+	ch <- successDesc
 }
 
 func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
 	metrics, err := GetMetrics(c.client, c.group, c.project)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("ERROR %s", err)
+		c.sendProbeSuccess(ch, false)  // send.go
+		return
 	}
 
-	c.sendPipelineCountByStatus(ch, metrics) // send.go
+	c.sendPipelineCountByStatus(ch, metrics)  // send.go
+	c.sendProbeSuccess(ch, true)  // send.go
 }
 
 type ProbeManager struct {

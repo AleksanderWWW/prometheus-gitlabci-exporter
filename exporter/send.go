@@ -33,3 +33,18 @@ func (c *GitLabCollector) sendPipelineCountByStatus(ch chan<- prometheus.Metric,
 		"pending",
 	)
 }
+
+func (c *GitLabCollector) sendProbeSuccess(ch chan<- prometheus.Metric, success bool) {
+	var value float64
+	if success {
+		value = 1
+	} else {
+		value = 0
+	}
+
+	ch <- prometheus.MustNewConstMetric(
+		successDesc,
+		prometheus.GaugeValue,
+		value,
+	)
+}
