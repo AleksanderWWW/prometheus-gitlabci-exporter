@@ -19,10 +19,7 @@ type Metrics struct {
 
 func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
 	pid := url.PathEscape(fmt.Sprintf("%s/%s", group, project))
-	pipelines, _, err := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
-	if err != nil {
-		return nil, err
-	}
+	pipelines, _, _ := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
 
 	var (
 		successCount, failedCount, pendingCount int32

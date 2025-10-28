@@ -26,7 +26,11 @@ func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
-	metrics, _ := GetMetrics(c.client, c.group, c.project)
+	metrics, err := GetMetrics(c.client, c.group, c.project)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	c.sendPipelineCountByStatus(ch, metrics) // send.go
 }
