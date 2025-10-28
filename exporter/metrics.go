@@ -2,7 +2,6 @@ package exporter
 
 import (
 	"fmt"
-	"net/url"
 
 	"gitlab.com/gitlab-org/api/client-go"
 )
@@ -18,8 +17,12 @@ type Metrics struct {
 }
 
 func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
-	pid := url.PathEscape(fmt.Sprintf("%s/%s", group, project))
-	pipelines, _, _ := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
+	pid := fmt.Sprintf("%s/%s", group, project)
+	pipelines, _, err := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
+
+	if err != nil {
+		return nil, err
+	}
 
 	var (
 		successCount, failedCount, pendingCount int32
@@ -38,10 +41,6 @@ func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) 
 			failedCount++
 		}
 	}
-
-	// here a real call to Gitlab CI/CD API
-
-	// TODO: gitlab.com/gitlab-org/api/client-go
 
 	return &Metrics{
 		PipelineCount{
