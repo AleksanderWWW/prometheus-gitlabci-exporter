@@ -22,6 +22,7 @@ type PipelineCount struct {
 
 type Metrics struct {
 	Count PipelineCount
+	LatestDuration float64
 }
 
 func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
@@ -30,6 +31,17 @@ func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) 
 
 	if err != nil {
 		return nil, err
+	}
+
+	latestPipeline, _, err := client.Pipelines.GetLatestPipeline(pid, &gitlab.GetLatestPipelineOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	var duration float64
+	if latestPipeline != nil {
+		duration = float64(latestPipeline.Duration)
 	}
 
 	pc := PipelineCount{}
@@ -62,6 +74,7 @@ func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) 
 	}
 
 	return &Metrics{
-		pc,
+		Count: pc,
+		LatestDuration: duration,
 	}, nil
 }

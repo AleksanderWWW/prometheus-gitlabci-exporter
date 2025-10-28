@@ -51,3 +51,11 @@ func (c *GitLabCollector) sendProbeSuccess(ch chan<- prometheus.Metric, success 
 		value,
 	)
 }
+
+func (c *GitLabCollector) sendLatestDuration(ch chan<- prometheus.Metric, duration float64) {
+	ch <- prometheus.MustNewConstMetric(
+		latestDurationDesc,
+		prometheus.GaugeValue,
+		duration,
+	)
+}
