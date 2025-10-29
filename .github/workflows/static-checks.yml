@@ -17,7 +17,7 @@ jobs:
       - name: Lint Dockerfile (hadolint)
         run: |
           docker run --rm -i ghcr.io/hadolint/hadolint:v2.12.1-beta-debian < Dockerfile
-        working-directory: backend
+        working-directory: .
 
   run-actionlint:
     runs-on: ubuntu-latest
