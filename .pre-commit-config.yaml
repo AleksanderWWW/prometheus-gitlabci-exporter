@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-vet
+      - id: validate-toml
+      - id: no-go-testing
+      - id: go-build
+      - id: go-mod-tidy
+  - repo: local
+    hooks:
+      - id: go-fmt
+        name: go-fmt
+        entry: bash -c "go fmt ./..."
+        language: system
+        types: [go]
+        pass_filenames: false
