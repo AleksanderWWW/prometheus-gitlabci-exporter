@@ -26,9 +26,9 @@ docker run ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0
 ### From GitHub releases
 
 ```shell
-wget https://github.com/alwojnarowicz/prometheus-gitlabci-exporter/releases/download/1.0.0/prometheus_gitlabci_exporter-1.0.0.tar.gz
+wget https://github.com/alwojnarowicz/prometheus-gitlabci-exporter/releases/download/0.1.0/prometheus_gitlabci_exporter-0.1.0.tar.gz
 
-tar -xzf prometheus_gitlabci_exporter-1.0.0.tar.gz
+tar -xzf prometheus_gitlabci_exporter-0.1.0.tar.gz
 
 chmod +x prometheus_gitlabci_exporter
 
