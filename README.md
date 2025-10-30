@@ -23,31 +23,43 @@ This allows you to monitor the health, duration, and success rates of pipelines 
 docker run ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0
 ```
 
+### From GitHub releases
+
+```shell
+wget https://github.com/alwojnarowicz/prometheus-gitlabci-exporter/releases/download/1.0.0/prometheus_gitlabci_exporter-1.0.0.tar.gz
+
+tar -xzf prometheus_gitlabci_exporter-1.0.0.tar.gz
+
+chmod +x prometheus_gitlabci_exporter
+
+./prometheus_gitlabci_exporter
+```
+
 ### From source
 
-### 1. Clone the repository
+#### 1. Clone the repository
 ```bash
 git clone https://github.com/AleksanderWWW/prometheus-gitlabci-exporter.git
 cd prometheus-gitlabci-exporter
 ```
 
-### 2. Build the binary
+#### 2. Build the binary
 ```bash
-go build -o gitlabci-exporter
+go build -o prometheus_gitlabci_exporter
 ```
 
-### 3. Run it
+#### 3. Run it
 You can provide your GitLab API token either via flag or environment variable.
 
-#### Option A: Using environment variable
-```bash
+```shell
 export GITLAB_API_TOKEN="glpat-yourtoken"
-./gitlabci-exporter
+./prometheus_gitlabci_exporter
 ```
 
-#### Option B: Using CLI flag
+or
+
 ```bash
-./gitlabci-exporter --api.token="glpat-yourtoken"
+./prometheus_gitlabci_exporter --api.token="glpat-yourtoken"
 ```
 
 ---
