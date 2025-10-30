@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"fmt"
+	"time"
 
 	"gitlab.com/gitlab-org/api/client-go"
 )
@@ -23,10 +24,12 @@ type PipelineCount struct {
 type Metrics struct {
 	Count          PipelineCount
 	LatestDuration float64
+	ProbeDuration  float64
 }
 
 func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
 	pid := fmt.Sprintf("%s/%s", group, project)
+	startTime := time.Now()
 	pipelines, _, err := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
 
 	if err != nil {
@@ -73,8 +76,11 @@ func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) 
 		}
 	}
 
+	probeDuration := time.Since(startTime)
+
 	return &Metrics{
 		Count:          pc,
 		LatestDuration: duration,
+		ProbeDuration:  probeDuration.Seconds(),
 	}, nil
 }

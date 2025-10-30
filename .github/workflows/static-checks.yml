@@ -1,0 +1,53 @@
+name: static-checks
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@1e31de5234b9f8995739874a8ce0492dc87873e2
+
+      - name: Lint Dockerfile (hadolint)
+        run: |
+          docker run --rm -i ghcr.io/hadolint/hadolint:v2.12.1-beta-debian < Dockerfile
+        working-directory: .
+
+  run-actionlint:
+    runs-on: ubuntu-latest
+    permissions:
+      # needed for the checkout action
+      contents: read
+      # needed to annotate the files in a pull request with comments
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@1e31de5234b9f8995739874a8ce0492dc87873e2
+
+      - uses: devops-actions/actionlint@c6744a34774e4e1c1df0ff66bdb07ec7ee480ca0
+
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Checking PR title: $PR_TITLE"
+
+          # Define the regex for Conventional Commits
+          CONVENTIONAL_REGEX="^(feat|fix|chore|docs|style|refactor|perf|test|ci|build|revert|security)(\([^)]+\))?!?: .+$"
+
+          if [[ ! "$PR_TITLE" =~ $CONVENTIONAL_REGEX ]]; then
+            echo "❌ PR title does not follow Conventional Commits format!"
+            echo "📝 Expected format: 'type(scope): description'"
+            echo "👉 Example: 'feat(auth): add login API'"
+            exit 1
+          fi
+
+          echo "✅ PR title is valid!"
