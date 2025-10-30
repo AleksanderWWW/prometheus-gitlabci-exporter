@@ -1,6 +1,6 @@
 # Prometheus GitLab CI Exporter
 
-A lightweight [Prometheus](https://prometheus.io/) exporter that collects and exposes GitLab CI/CD pipeline metrics for specific projects and groups.  
+A lightweight [Prometheus](https://prometheus.io/) exporter that collects and exposes GitLab CI/CD pipeline metrics for specific projects and groups.
 This allows you to monitor the health, duration, and success rates of pipelines in GitLab using Prometheus and Grafana.
 
 ---
@@ -105,8 +105,8 @@ gitlab_probe_success 1
 ```
 
 The exporter:
-1. Accepts HTTP requests from Prometheus with `group` and `project` query parameters.  
-2. Queries the GitLab API to list pipelines and get the latest one’s duration.  
+1. Accepts HTTP requests from Prometheus with `group` and `project` query parameters.
+2. Queries the GitLab API to list pipelines and get the latest one’s duration.
 3. Exposes aggregated metrics over `/probe`.
 
 ---
