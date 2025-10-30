@@ -1,0 +1,33 @@
+name: test-api
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-api:
+    name: test-api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1e31de5234b9f8995739874a8ce0492dc87873e2
+        name: checkout source code
+
+      - run: |
+          docker build -t localapi:0.1.0 .
+        name: docker build
+        shell: bash
+
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00
+        with:
+          go-version: stable
+
+      - run: |
+          cid=$(docker run --rm -d -p 9115:9115 localapi:0.1.0)
+          sleep 4
+          go test -v
+          docker stop "$cid"
+        name: run tests against container
+        env:
+          TEST_HOST: http://localhost:9115/probe
