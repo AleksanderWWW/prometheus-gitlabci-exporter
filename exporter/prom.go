@@ -30,6 +30,13 @@ var latestDurationDesc = prometheus.NewDesc(
 	nil,
 )
 
+var probeDurationDesc = prometheus.NewDesc(
+	"exporter_probe_duration_seconds",
+	"Duration in seconds of the probe",
+	nil,
+	nil,
+)
+
 type GitLabCollector struct {
 	group, project string
 	client         *gitlab.Client
@@ -39,6 +46,7 @@ func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- pipelineTotalDesc
 	ch <- successDesc
 	ch <- latestDurationDesc
+	ch <- probeDurationDesc
 }
 
 func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
@@ -53,6 +61,7 @@ func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
 	c.sendPipelineCountByStatus(ch, metrics)         // send.go
 	c.sendProbeSuccess(ch, true)                     // send.go
 	c.sendLatestDuration(ch, metrics.LatestDuration) // send.go
+	c.sendProbeDuration(ch, metrics.ProbeDuration)   // send.go
 }
 
 type ProbeManager struct {
