@@ -1,9 +1,8 @@
 name: build-and-push
 
 on:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [published]  # triggers when a new release is published
 
 jobs:
   build-and-push-image:
@@ -24,4 +23,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:"${GITHUB_REF#refs/tags/}"
+          tags: ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:${{ github.event.release.tag_name }}
