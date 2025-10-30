@@ -48,7 +48,7 @@ func TestAPI(t *testing.T) {
 			if err != nil {
 				t.Fatalf("making request: %v", err)
 			}
-			defer resp.Body.Close()
+			defer saveCloseRespBody(resp)
 
 			bodyText, err := io.ReadAll(resp.Body)
 			if err != nil {
@@ -61,5 +61,12 @@ func TestAPI(t *testing.T) {
 				t.Errorf("test failed for %s/%s", tCase.group, tCase.project)
 			}
 		})
+	}
+}
+
+func saveCloseRespBody(resp *http.Response) {
+	err := resp.Body.Close()
+	if err != nil {
+		panic(err)
 	}
 }
