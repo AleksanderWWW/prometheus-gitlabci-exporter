@@ -17,6 +17,14 @@ This allows you to monitor the health, duration, and success rates of pipelines 
 
 ## 📦 Installation
 
+### Docker
+
+```shell
+docker run ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0
+```
+
+### From source
+
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/AleksanderWWW/prometheus-gitlabci-exporter.git
