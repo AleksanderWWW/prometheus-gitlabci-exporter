@@ -20,7 +20,13 @@ This allows you to monitor the health, duration, and success rates of pipelines 
 ### Docker
 
 ```shell
-docker run ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0
+docker run -p 9115:9115 ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0
+```
+
+alternatively, with another port
+
+```shell
+docker run -p 8000:8000 ghcr.io/aleksanderwww/prometheus-gitlabci-exporter:0.1.0 --web.port=:8000
 ```
 
 ### From GitHub releases
