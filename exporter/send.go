@@ -2,42 +2,55 @@ package exporter
 
 import "github.com/prometheus/client_golang/prometheus"
 
-func (c *GitLabCollector) sendPipelineCountByStatus(ch chan<- prometheus.Metric, metrics *Metrics) {
-	counts := metrics.Count
+type DefaultMetricsSender struct{}
 
-	c.sendCount(ch, counts.Success, "success")
-
-	c.sendCount(ch, counts.Failed, "failed")
-
-	c.sendCount(ch, counts.Cancelled, "cancelled")
-
-	c.sendCount(ch, counts.Manual, "manual")
-
-	c.sendCount(ch, counts.Pending, "pending")
-
-	c.sendCount(ch, counts.Preparing, "preparing")
-
-	c.sendCount(ch, counts.Running, "running")
-
-	c.sendCount(ch, counts.Scheduled, "scheduled")
-
-	c.sendCount(ch, counts.Skipped, "skipped")
-
-	c.sendCount(ch, counts.WaitingForResource, "waiting_for_resource")
+func (df *DefaultMetricsSender) SendProbeFailure(ch chan<- prometheus.Metric) {
+	SendProbeStatus(ch, false)
 }
 
-func (c *GitLabCollector) sendCount(ch chan<- prometheus.Metric, val float64, status string) {
+func (df *DefaultMetricsSender) SendMetrics(ch chan<- prometheus.Metric, metrics *Metrics, opts *GitlabScrapeOpts) {
+	SendPipelineCountByStatus(ch, metrics, opts)
+	SendProbeStatus(ch, true)
+	SendLatestDuration(ch, metrics.LatestDuration)
+	SendProbeDuration(ch, metrics.ProbeDuration)
+}
+
+func SendPipelineCountByStatus(ch chan<- prometheus.Metric, metrics *Metrics, opts *GitlabScrapeOpts) {
+	counts := metrics.Count
+
+	SendCount(ch, counts.Success, "success", opts)
+
+	SendCount(ch, counts.Failed, "failed", opts)
+
+	SendCount(ch, counts.Cancelled, "cancelled", opts)
+
+	SendCount(ch, counts.Manual, "manual", opts)
+
+	SendCount(ch, counts.Pending, "pending", opts)
+
+	SendCount(ch, counts.Preparing, "preparing", opts)
+
+	SendCount(ch, counts.Running, "running", opts)
+
+	SendCount(ch, counts.Scheduled, "scheduled", opts)
+
+	SendCount(ch, counts.Skipped, "skipped", opts)
+
+	SendCount(ch, counts.WaitingForResource, "waiting_for_resource", opts)
+}
+
+func SendCount(ch chan<- prometheus.Metric, val float64, status string, opts *GitlabScrapeOpts) {
 	ch <- prometheus.MustNewConstMetric(
 		pipelineTotalDesc,
 		prometheus.CounterValue,
 		val,
-		c.group,
-		c.project,
+		opts.group,
+		opts.project,
 		status,
 	)
 }
 
-func (c *GitLabCollector) sendProbeSuccess(ch chan<- prometheus.Metric, success bool) {
+func SendProbeStatus(ch chan<- prometheus.Metric, success bool) {
 	var value float64
 	if success {
 		value = 1
@@ -52,7 +65,7 @@ func (c *GitLabCollector) sendProbeSuccess(ch chan<- prometheus.Metric, success 
 	)
 }
 
-func (c *GitLabCollector) sendLatestDuration(ch chan<- prometheus.Metric, duration float64) {
+func SendLatestDuration(ch chan<- prometheus.Metric, duration float64) {
 	ch <- prometheus.MustNewConstMetric(
 		latestDurationDesc,
 		prometheus.GaugeValue,
@@ -60,7 +73,7 @@ func (c *GitLabCollector) sendLatestDuration(ch chan<- prometheus.Metric, durati
 	)
 }
 
-func (c *GitLabCollector) sendProbeDuration(ch chan<- prometheus.Metric, duration float64) {
+func SendProbeDuration(ch chan<- prometheus.Metric, duration float64) {
 	ch <- prometheus.MustNewConstMetric(
 		probeDurationDesc,
 		prometheus.GaugeValue,

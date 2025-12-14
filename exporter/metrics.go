@@ -27,8 +27,8 @@ type Metrics struct {
 	ProbeDuration  float64
 }
 
-func GetMetrics(client *gitlab.Client, group, project string) (*Metrics, error) {
-	pid := fmt.Sprintf("%s/%s", group, project)
+func GetMetrics(client *gitlab.Client, opts *GitlabScrapeOpts) (*Metrics, error) {
+	pid := fmt.Sprintf("%s/%s", opts.group, opts.project)
 	startTime := time.Now()
 	pipelines, _, err := client.Pipelines.ListProjectPipelines(pid, &gitlab.ListProjectPipelinesOptions{})
 

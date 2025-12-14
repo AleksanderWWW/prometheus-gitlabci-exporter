@@ -9,37 +9,19 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
-var pipelineTotalDesc = prometheus.NewDesc(
-	"gitlab_pipeline_total",
-	"Total number of pipelines for the target project.",
-	[]string{"group", "project", "status"},
-	nil,
-)
-
-var successDesc = prometheus.NewDesc(
-	"gitlab_probe_success",
-	"Whether the probe was successful (1 - success, 0 - failure).",
-	nil,
-	nil,
-)
-
-var latestDurationDesc = prometheus.NewDesc(
-	"gitlab_pipeline_last_duration_seconds",
-	"Duration of the latest pipeline in seconds.",
-	nil,
-	nil,
-)
-
-var probeDurationDesc = prometheus.NewDesc(
-	"exporter_probe_duration_seconds",
-	"Duration in seconds of the probe",
-	nil,
-	nil,
-)
-
 type GitLabCollector struct {
+	client        *gitlab.Client
+	metricsSender MetricsSender
+	opts          *GitlabScrapeOpts
+}
+
+type GitlabScrapeOpts struct {
 	group, project string
-	client         *gitlab.Client
+}
+
+type MetricsSender interface {
+	SendProbeFailure(ch chan<- prometheus.Metric)
+	SendMetrics(ch chan<- prometheus.Metric, metrics *Metrics, opts *GitlabScrapeOpts)
 }
 
 func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -50,22 +32,20 @@ func (c *GitLabCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *GitLabCollector) Collect(ch chan<- prometheus.Metric) {
-	metrics, err := GetMetrics(c.client, c.group, c.project)
+	metrics, err := GetMetrics(c.client, c.opts)
 
 	if err != nil {
 		log.Printf("ERROR %s", err)
-		c.sendProbeSuccess(ch, false) // send.go
+		c.metricsSender.SendProbeFailure(ch)
 		return
 	}
 
-	c.sendPipelineCountByStatus(ch, metrics)         // send.go
-	c.sendProbeSuccess(ch, true)                     // send.go
-	c.sendLatestDuration(ch, metrics.LatestDuration) // send.go
-	c.sendProbeDuration(ch, metrics.ProbeDuration)   // send.go
+	c.metricsSender.SendMetrics(ch, metrics, c.opts)
 }
 
 type ProbeManager struct {
 	Client *gitlab.Client
+	Sender MetricsSender
 }
 
 func (pm *ProbeManager) ProbeHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +58,14 @@ func (pm *ProbeManager) ProbeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	reg := prometheus.NewRegistry()
-	reg.MustRegister(&GitLabCollector{group: group, project: project, client: pm.Client})
+	reg.MustRegister(&GitLabCollector{
+		client:        pm.Client,
+		metricsSender: pm.Sender,
+		opts: &GitlabScrapeOpts{
+			project: project,
+			group:   group,
+		},
+	})
 
 	log.Printf("Scraping GitLab pipelines for %s/%s", group, project)
 	promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)

@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("Could not create client: %s", err)
 	}
 
-	manager := exporter.ProbeManager{Client: git}
+	manager := exporter.ProbeManager{Client: git, Sender: &exporter.DefaultMetricsSender{}}
 
 	http.HandleFunc("/probe", manager.ProbeHandler)
 
