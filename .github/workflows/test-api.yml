@@ -24,10 +24,12 @@ jobs:
           go-version: stable
 
       - run: |
-          cid=$(docker run --rm -d -p 9115:9115 localapi:0.1.0)
+          docker run --rm -d -p 9115:9115 --name localapi localapi:0.1.0
           sleep 4
           go test -v
-          docker stop "$cid"
         name: run tests against container
         env:
           TEST_HOST: http://localhost:9115/probe
+
+      - name: stop container
+        run: docker stop localapi
