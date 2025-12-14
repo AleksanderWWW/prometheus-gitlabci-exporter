@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/AleksanderWWW/prometheus-gitlabci-exporter/cmd"
+	"github.com/AleksanderWWW/prometheus-gitlabci-exporter/internal"
 	"github.com/alecthomas/kingpin/v2"
 	"gitlab.com/gitlab-org/api/client-go"
-
-	"github.com/AleksanderWWW/prometheus-gitlabci-exporter/exporter"
 )
 
 var (
@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("Could not create client: %s", err)
 	}
 
-	manager := exporter.ProbeManager{Client: git}
+	manager := cmd.ProbeManager{Client: git, Sender: &internal.DefaultMetricsSender{}}
 
 	http.HandleFunc("/probe", manager.ProbeHandler)
 

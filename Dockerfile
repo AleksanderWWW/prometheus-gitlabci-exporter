@@ -7,7 +7,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY exporter/ ./exporter/
+COPY cmd ./cmd
+COPY internal ./internal
 COPY main.go .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o prom_exporter .
