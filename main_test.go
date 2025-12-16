@@ -7,11 +7,13 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAPI(t *testing.T) {
-	client := &http.Client{}
+var client *http.Client = &http.Client{}
 
+func TestAPI(t *testing.T) {
 	baseUrl := os.Getenv("TEST_BASE_URL")
 	if baseUrl == "" {
 		baseUrl = "http://localhost:9115/probe"
@@ -62,6 +64,36 @@ func TestAPI(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestResponseContent(t *testing.T) {
+	baseUrl := os.Getenv("TEST_BASE_URL")
+	if baseUrl == "" {
+		baseUrl = "http://localhost:9115/probe"
+	}
+
+	url := fmt.Sprintf("%s?group=%s&project=%s", baseUrl, "alwojnarowicz", "some-project1")
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		t.Fatalf("creating request: %v", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("making request: %v", err)
+	}
+	defer saveCloseRespBody(resp)
+
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("reading response body: %v", err)
+	}
+
+	assert.Contains(t, string(bodyText), "gitlab_probe_success")
+	assert.Contains(t, string(bodyText), "gitlab_host")
+	assert.Contains(t, string(bodyText), "gitlab_pipeline_total")
+	assert.Contains(t, string(bodyText), "gitlab_pipeline_total")
+	assert.Contains(t, string(bodyText), "exporter_probe_duration_seconds")
 }
 
 func saveCloseRespBody(resp *http.Response) {
