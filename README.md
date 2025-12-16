@@ -163,6 +163,7 @@ scrape_configs:
 | `gitlab_pipeline_last_duration_seconds` | Gauge | Duration of the latest pipeline |
 | `gitlab_probe_success` | Gauge | Indicates if the exporter successfully queried GitLab |
 | `gitlab_host` | Gauge | Host name of the GitLab instance |
+| `exporter_probe_duration_seconds` | Gauge | Duration of the probe in seconds |
 
 ---
 
