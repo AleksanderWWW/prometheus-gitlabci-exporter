@@ -13,6 +13,7 @@ func (df *DefaultMetricsSender) SendMetrics(ch chan<- prometheus.Metric, metrics
 	sendProbeStatus(ch, true)
 	sendLatestDuration(ch, metrics.LatestDuration)
 	sendProbeDuration(ch, metrics.ProbeDuration)
+	sendGitlabHost(ch, metrics.GitlabHost)
 }
 
 func sendPipelineCountByStatus(ch chan<- prometheus.Metric, metrics *Metrics, opts *GitlabScrapeOpts) {
@@ -78,5 +79,14 @@ func sendProbeDuration(ch chan<- prometheus.Metric, duration float64) {
 		probeDurationDesc,
 		prometheus.GaugeValue,
 		duration,
+	)
+}
+
+func sendGitlabHost(ch chan<- prometheus.Metric, host string) {
+	ch <- prometheus.MustNewConstMetric(
+		gitlabHostDesc,
+		prometheus.GaugeValue,
+		1,
+		host,
 	)
 }

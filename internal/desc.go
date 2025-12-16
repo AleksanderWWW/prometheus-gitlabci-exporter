@@ -7,6 +7,7 @@ func Describe(ch chan<- *prometheus.Desc) {
 	ch <- successDesc
 	ch <- latestDurationDesc
 	ch <- probeDurationDesc
+	ch <- gitlabHostDesc
 }
 
 var pipelineTotalDesc = prometheus.NewDesc(
@@ -34,5 +35,12 @@ var probeDurationDesc = prometheus.NewDesc(
 	"exporter_probe_duration_seconds",
 	"Duration in seconds of the probe",
 	nil,
+	nil,
+)
+
+var gitlabHostDesc = prometheus.NewDesc(
+	"gitlab_host",
+	"Host name of the GitLab instance",
+	[]string{"instance"},
 	nil,
 )

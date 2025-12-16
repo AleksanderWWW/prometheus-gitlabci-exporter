@@ -25,6 +25,7 @@ type Metrics struct {
 	Count          PipelineCount
 	LatestDuration float64
 	ProbeDuration  float64
+	GitlabHost     string
 }
 
 func GetMetrics(client *gitlab.Client, opts *GitlabScrapeOpts) (*Metrics, error) {
@@ -82,5 +83,6 @@ func GetMetrics(client *gitlab.Client, opts *GitlabScrapeOpts) (*Metrics, error)
 		Count:          pc,
 		LatestDuration: duration,
 		ProbeDuration:  probeDuration.Seconds(),
+		GitlabHost:     client.BaseURL().Hostname(),
 	}, nil
 }
