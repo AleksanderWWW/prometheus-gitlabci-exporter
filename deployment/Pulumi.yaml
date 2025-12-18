@@ -1,0 +1,9 @@
+name: deployment
+description: A minimal Go Pulumi program
+runtime: go
+config:
+  docker:host:
+    value: tcp://localhost:2375
+  pulumi:tags:
+    value:
+      pulumi:template: go

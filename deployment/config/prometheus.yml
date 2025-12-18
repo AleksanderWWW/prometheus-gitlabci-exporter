@@ -1,0 +1,9 @@
+scrape_configs:
+  - job_name: 'gitlabci_exporter'
+    metrics_path: /probe
+    static_configs:
+      - targets:
+          - 'exporter:9115'
+    params:
+      group: ['alwojnarowicz']
+      project: ['some-project1']
