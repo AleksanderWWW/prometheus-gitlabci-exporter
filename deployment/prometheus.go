@@ -9,7 +9,6 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-
 func runPrometheusContainer(ctx *pulumi.Context) error {
 	prometheus, err := docker.NewRemoteImage(ctx, "prometheus", &docker.RemoteImageArgs{
 		Name: pulumi.String(fmt.Sprintf("%s:%s", PROMETHEUS_IMAGE, PROMETHEUS_TAG)),
@@ -31,7 +30,7 @@ func runPrometheusContainer(ctx *pulumi.Context) error {
 	_, err = docker.NewContainer(ctx, "prometheus", &docker.ContainerArgs{
 		Image: prometheus.ImageId,
 		Name:  pulumi.String("prometheus"),
-		Ports:  docker.ContainerPortArray{
+		Ports: docker.ContainerPortArray{
 			&docker.ContainerPortArgs{
 				Internal: pulumi.Int(PROMETHEUS_PORT),
 				External: pulumi.Int(PROMETHEUS_PORT),
@@ -45,8 +44,8 @@ func runPrometheusContainer(ctx *pulumi.Context) error {
 		Rm: pulumi.BoolPtr(false),
 		Mounts: docker.ContainerMountArray{
 			&docker.ContainerMountArgs{
-				Target: pulumi.String("/etc/prometheus/prometheus.yml"),
-				Type: pulumi.String("bind"),
+				Target:   pulumi.String("/etc/prometheus/prometheus.yml"),
+				Type:     pulumi.String("bind"),
 				ReadOnly: pulumi.Bool(true),
 				Source:   pulumi.String(path.Join(cwd, "config", "prometheus.yml")),
 			},

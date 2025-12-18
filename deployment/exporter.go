@@ -18,7 +18,7 @@ func runExporterContainer(ctx *pulumi.Context) error {
 	_, err = docker.NewContainer(ctx, "exporter", &docker.ContainerArgs{
 		Image: exporter.ImageId,
 		Name:  pulumi.String("exporter"),
-		Ports:  docker.ContainerPortArray{
+		Ports: docker.ContainerPortArray{
 			&docker.ContainerPortArgs{
 				Internal: pulumi.Int(EXPORTER_PORT),
 				External: pulumi.Int(EXPORTER_PORT),
